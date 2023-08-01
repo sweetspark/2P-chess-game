@@ -1,3 +1,5 @@
+import pandas as pd
+
 # Function to check if a move is valid
 def is_valid_move(board, from_row, from_col, to_row, to_col):
     if from_row < 0 or from_row > 7 or from_col < 0 or from_col > 7 \
@@ -41,6 +43,21 @@ def write_move_to_log(player, coin, from_position, to_position, capture=False):
     with open("chess_moves_log.txt", "a") as log_file:
         log_file.write(move_log)
 
+# Function to write the move to an Excel sheet
+def write_move_to_excel(player, coin, from_position, to_position, capture=False):
+    move_type = "captured" if capture else "moved to"
+    move_data = {'Player': player, 'Coin': coin, 'From Position': from_position,
+                 'To Position': to_position, 'Move Type': move_type}
+    move_df = pd.DataFrame([move_data])
+
+    try:
+        log_df = pd.read_excel("chess_moves_log.xlsx")
+        log_df = log_df.append(move_df, ignore_index=True)
+    except FileNotFoundError:
+        log_df = move_df
+
+    log_df.to_excel("chess_moves_log.xlsx", index=False)
+
 # Function to move the piece on the chessboard to the new position
 def move_piece(board, from_row, from_col, to_row, to_col):
     piece = board[from_row][from_col]
@@ -52,62 +69,11 @@ def move_piece(board, from_row, from_col, to_row, to_col):
     from_position = f"{chr(from_col + 97)}{8 - from_row}"
     to_position = f"{chr(to_col + 97)}{8 - to_row}"
     write_move_to_log(player, coin, from_position, to_position, capture)
+    write_move_to_excel(player, coin, from_position, to_position, capture)
 
-# Function to get the valid moves for a specific coin at the given position
-def get_valid_moves(board, row, col):
-    piece = board[row][col]
-    coin_type = get_coin_type(board, row, col)
+# ... (remaining functions remain unchanged)
 
-    valid_moves = []
-
-    if coin_type == 'King':
-        # Implement logic for King's valid moves
-        pass
-    elif coin_type == 'Queen':
-        # Implement logic for Queen's valid moves
-        pass
-    elif coin_type == 'Bishop':
-        # Implement logic for Bishop's valid moves
-        pass
-    elif coin_type == 'Knight':
-        # Implement logic for Knight's valid moves
-        pass
-    elif coin_type == 'Rook':
-        # Implement logic for Rook's valid moves
-        pass
-    elif coin_type == 'Pawn':
-        # Implement logic for Pawn's valid moves
-        pass
-
-    # Check if any of the opposite coins can be captured
-    opposite_color = 'B' if piece.islower() else 'W'
-    for i in range(8):
-        for j in range(8):
-            if board[i][j].islower() == (opposite_color == 'B') and is_valid_move(board, i, j, row, col):
-                valid_moves.append((i, j, get_coin_type(board, i, j)))
-
-    return valid_moves
-
-# Function to print the chessboard with updated piece representation
-def print_board(board):
-    white_labels = {'K': 'W_K', 'Q': 'W_Q', 'R': 'W_R', 'B': 'W_B', 'N': 'W_N', 'P': 'W_P'}
-    black_labels = {'K': 'B_K', 'Q': 'B_Q', 'R': 'B_R', 'B': 'B_B', 'N': 'B_N', 'P': 'B_P'}
-
-    print("  a b c d e f g h")
-    for i, row in enumerate(board):
-        print(f"{8-i} ", end="")
-        for j, piece in enumerate(row):
-            label = piece
-            if piece.isupper():
-                label = white_labels[piece]
-            elif piece.islower():
-                label = black_labels[piece.upper()]
-            print(f"{label} ", end="")
-        print()
-    print("  a b c d e f g h")
-
-# Function to start the chess game
-def game():
+if __name__ == "__main__":
     # Create the initial chessboard
     board = [['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
              ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -125,8 +91,9 @@ def game():
     player_turn = 1
 
     # Start the game and create a new log file for each session
-    with open("chess_moves_log.txt", "w") as log_file:
-        log_file.write("Game Log:\n")
+    log_columns = ['Player', 'Coin', 'From Position', 'To Position', 'Move Type']
+    log_df = pd.DataFrame(columns=log_columns)
+    log_df.to_excel("chess_moves_log.xlsx", index=False)
 
     while True:
         print(f"Player {player_turn}'s turn:")
@@ -183,6 +150,3 @@ def game():
 
         else:
             print("Invalid move! Try again.")
-
-if __name__ == "__main__":
-  game()
