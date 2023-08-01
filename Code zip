@@ -1,1 +1,188 @@
+# Function to check if a move is valid
+def is_valid_move(board, from_row, from_col, to_row, to_col):
+    if from_row < 0 or from_row > 7 or from_col < 0 or from_col > 7 \
+        or to_row < 0 or to_row > 7 or to_col < 0 or to_col > 7:
+        return False
 
+    # Check if the destination is an empty cell or contains an opponent's piece
+    if board[to_row][to_col] == '.' or board[from_row][from_col].islower() != board[to_row][to_col].islower():
+        return True
+
+    return False
+
+# Function to get the type of coin at the given position
+def get_coin_type(board, row, col):
+    piece = board[row][col]
+    if piece == 'K':
+        return 'King'
+    elif piece == 'Q':
+        return 'Queen'
+    elif piece == 'B':
+        return 'Bishop'
+    elif piece == 'N':
+        return 'Knight'
+    elif piece == 'R':
+        return 'Rook'
+    elif piece == 'P':
+        return 'Pawn'
+    else:
+        return 'Empty'
+
+# Function to check if the game is over (checkmate)
+def is_checkmate(board):
+    # Implement your checkmate logic here
+    # For simplicity, this function always returns False in this basic implementation.
+    return False
+
+# Function to write the move to a log file
+def write_move_to_log(player, coin, from_position, to_position, capture=False):
+    move_type = "captured" if capture else "moved to"
+    move_log = f"{player} {coin} at {from_position} has been {move_type} {to_position}\n"
+    with open("chess_moves_log.txt", "a") as log_file:
+        log_file.write(move_log)
+
+# Function to move the piece on the chessboard to the new position
+def move_piece(board, from_row, from_col, to_row, to_col):
+    piece = board[from_row][from_col]
+    capture = board[to_row][to_col] != '.'  # Check if there is a capture
+    board[from_row][from_col] = '.'
+    board[to_row][to_col] = piece
+    player = "White" if piece.isupper() else "Black"
+    coin = piece.upper()
+    from_position = f"{chr(from_col + 97)}{8 - from_row}"
+    to_position = f"{chr(to_col + 97)}{8 - to_row}"
+    write_move_to_log(player, coin, from_position, to_position, capture)
+
+# Function to get the valid moves for a specific coin at the given position
+def get_valid_moves(board, row, col):
+    piece = board[row][col]
+    coin_type = get_coin_type(board, row, col)
+
+    valid_moves = []
+
+    if coin_type == 'King':
+        # Implement logic for King's valid moves
+        pass
+    elif coin_type == 'Queen':
+        # Implement logic for Queen's valid moves
+        pass
+    elif coin_type == 'Bishop':
+        # Implement logic for Bishop's valid moves
+        pass
+    elif coin_type == 'Knight':
+        # Implement logic for Knight's valid moves
+        pass
+    elif coin_type == 'Rook':
+        # Implement logic for Rook's valid moves
+        pass
+    elif coin_type == 'Pawn':
+        # Implement logic for Pawn's valid moves
+        pass
+
+    # Check if any of the opposite coins can be captured
+    opposite_color = 'B' if piece.islower() else 'W'
+    for i in range(8):
+        for j in range(8):
+            if board[i][j].islower() == (opposite_color == 'B') and is_valid_move(board, i, j, row, col):
+                valid_moves.append((i, j, get_coin_type(board, i, j)))
+
+    return valid_moves
+
+# Function to print the chessboard with updated piece representation
+def print_board(board):
+    white_labels = {'K': 'W_K', 'Q': 'W_Q', 'R': 'W_R', 'B': 'W_B', 'N': 'W_N', 'P': 'W_P'}
+    black_labels = {'K': 'B_K', 'Q': 'B_Q', 'R': 'B_R', 'B': 'B_B', 'N': 'B_N', 'P': 'B_P'}
+
+    print("  a b c d e f g h")
+    for i, row in enumerate(board):
+        print(f"{8-i} ", end="")
+        for j, piece in enumerate(row):
+            label = piece
+            if piece.isupper():
+                label = white_labels[piece]
+            elif piece.islower():
+                label = black_labels[piece.upper()]
+            print(f"{label} ", end="")
+        print()
+    print("  a b c d e f g h")
+
+# Function to start the chess game
+def game():
+    # Create the initial chessboard
+    board = [['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+             ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+             ['.', '.', '.', '.', '.', '.', '.', '.'],
+             ['.', '.', '.', '.', '.', '.', '.', '.'],
+             ['.', '.', '.', '.', '.', '.', '.', '.'],
+             ['.', '.', '.', '.', '.', '.', '.', '.'],
+             ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+             ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']]
+
+    # Display the initial chessboard
+    print("Welcome to 2-Player Chess Game!")
+    print_board(board)
+
+    player_turn = 1
+
+    # Start the game and create a new log file for each session
+    with open("chess_moves_log.txt", "w") as log_file:
+        log_file.write("Game Log:\n")
+
+    while True:
+        print(f"Player {player_turn}'s turn:")
+
+        # Get the move from the player
+        move = input("Enter your move (e.g., b1 c3): ")
+
+        # Handle the "exit" command
+        if move.lower() == "exit":
+            print("Exiting the game.")
+            break
+
+        # Handle the "Print" command
+        if move.lower() == "print":
+            print_board(board)
+            continue
+
+        # Handle the "<Position> --help" command
+        if "--help" in move:
+            position = move.split()[0]
+            row, col = 7 - (ord(position[1]) - 49), ord(position[0].lower()) - 97
+            print(can_be_captured(board, row, col, player_turn))
+            continue
+
+        try:
+            from_row, from_col = int(move[1]), ord(move[0].lower()) - 97
+            to_row, to_col = int(move[4]), ord(move[3].lower()) - 97
+        except (ValueError, IndexError):
+            print("Invalid move! Try again.")
+            continue
+
+        # Check if the move is valid
+        if is_valid_move(board, from_row, from_col, to_row, to_col):
+            # Move the piece on the board
+            move_piece(board, from_row, from_col, to_row, to_col)
+
+            # Display the updated chessboard
+            print_board(board)
+
+            # Get the type of coin and its valid moves at the chosen position
+            coin_type = get_coin_type(board, to_row, to_col)
+            valid_moves = get_valid_moves(board, to_row, to_col)
+
+            print(f"The current coin type: {coin_type}")
+            print(f"The valid moves for this coin: {valid_moves}")
+
+            # Check for checkmate
+            if is_checkmate(board):
+                print(f"Checkmate! Player {player_turn} wins!")
+                break
+
+            # Switch to the other player's turn
+            player_turn = 3 - player_turn  # Alternates between 1 and 2
+
+        else:
+            print("Invalid move! Try again.")
+
+if __name__ == "__main__":
+  game()
